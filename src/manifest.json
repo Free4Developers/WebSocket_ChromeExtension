@@ -11,9 +11,6 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-  "icons": {
-    "128": "icon-128.png"
-  },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*", "<all_urls>"],
@@ -21,6 +18,9 @@
       "css": ["content.styles.css"]
     }
   ],
+  "icons": {
+    "128": "icon-128.png"
+  },
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
@@ -29,6 +29,7 @@
     }
   ],
   "permissions": [
-    "storage"
+    "storage", "activeTab", "scripting", "tabs"
   ]
 }
+
