@@ -1,4 +1,4 @@
-.container {
+.chatting_container {
     position: absolute;
     top: 0px;
     bottom: 0px;
@@ -8,32 +8,68 @@
     height: 100%;
     padding: 10px;
 }
-.urlInput {
+.chatting_urlInput {
     width: 300px;
     height: 40px;
 }
-.connectBtn {
+.chatting_connectBtn {
     background-color: orange;
     color: white;
     height: 40px;
 }
-.disConnectBtn{
+.chatting_disConnectBtn{
+    position: absolute;
+    right: 0;
+    top: 0;
     background-color: red;
     color: white;
     height: 40px;
 }
-.chattingRoom {
+.chatting_Room {
     display: inline-block;
-    width: 350px;
-    height: 80%;
+    width: 360px;
+    height: 90%;
+    padding-top: 10px;
+    padding-bottom: 10px;
     background-color: white;
-    border: 1px solid blue;
+    border: 1px solid #eef2f4;
+    overflow-y: scroll;
 }
-.sendMessage {
+.chatting_sendMessage {
     width: 70px;
     height: 40px;
+    background-color: #0086ff;
+    color: white;
+    border: none;
 }
-.messageInput {
+.chatting_messageInput {
     width: 280px;
     height: 40px;
+    background-color: #f8f8fa;
+    border: none;
+    padding-left: 10px;
+}
+.recieved_chat {
+    width: fit-content;
+    max-width: 70%;
+    margin-right: auto;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    padding: 5px 15px 5px 15px;
+
+    background-color: #f1f2f6;
+    color:black;
+    border-radius: 20px;
+}
+.send_chat {
+    width: fit-content;
+    max-width: 70%;
+    margin-left: auto;
+    margin-bottom: 10px;
+    margin-right: 5px;
+    padding: 5px 15px 5px 15px;
+    
+    background-color: #0086ff;
+    color:white;
+    border-radius: 20px;
 }

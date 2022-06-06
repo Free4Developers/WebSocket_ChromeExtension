@@ -16,14 +16,14 @@ chrome.storage.sync.get(['applicationState'], function(result){
 });
 
 
-
 async function getCurrentTab() {
     let queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
     if(chrome.tabs === undefined){
+        createChatDiv();
         chrome.storage.sync.get(['applicationState'], function(result){
             if(result.applicationState){
-                createChatDiv();
+                // createChatDiv();
                 displayChatDiv();
             }
         });
@@ -40,6 +40,7 @@ async function getCurrentTab() {
 export function onApplicationRun(){
     getCurrentTab().then(
         (res)=>{
+            console.log(res)
             if(res === undefined){
                 return;
             }
@@ -81,4 +82,13 @@ export function onApplicationOff(){
             }
         }
     )
+}
+
+export function onSocketConnection() {
+    const ENDPOINT = "http://127.0.0.1:8080";
+
+}
+
+export function sendSocketMessage() {
+
 }

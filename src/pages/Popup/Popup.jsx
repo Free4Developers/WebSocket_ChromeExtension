@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
 import Switch from '@mui/material/Switch';
 import { onApplicationRun, onApplicationOff, onApplicationOn } from '../Background/index'
@@ -11,15 +9,21 @@ const Popup = () => {
   useEffect(()=>{
     chrome.storage.sync.get(['applicationState'], function(result){
       setIsOn(result.applicationState);
+      onApplicationRun();
       console.log(result)
   });
   },[]);
   const onSwitchChange = () =>{
     chrome.storage.sync.set({applicationState: !isOn}, function(){
+      console.log(isOn)
       if(!isOn){
+        console.log("run")
         onApplicationOn();
       }
-      else onApplicationOff();
+      else {
+        console.log("off")
+        onApplicationOff();
+      }
       setIsOn(!isOn);
     });
     
