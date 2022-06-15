@@ -50,21 +50,12 @@ export async function getCurrentTab() {
 
 export function onApplicationRun(){
     console.log("first app run")
-    getCurrentTab().then(
-        (res)=>{
-            console.log(res)
-            if(res === undefined){
-                return;
-            }
-            else{
-                chrome.scripting.executeScript({
-                    target: {tabId: res.id},
-                    func: createChatDiv,
-                });
-                console.log(res)
-            }
+    createChatDiv();
+    chrome.storage.sync.get(['applicationState'], function(result){
+        if(result.applicationState){
+            displayChatDiv();
         }
-    )
+    });
 }
 export function onApplicationOn(){
     console.log("어플리케이션 구동")
@@ -83,8 +74,10 @@ export function onApplicationOn(){
     )
 }
 export function onApplicationOff(){
+    console.log("어플리케이션 오프")
     getCurrentTab().then(
         (res)=>{
+            console.log(res)
             if(res === undefined){
                 return;
             }
