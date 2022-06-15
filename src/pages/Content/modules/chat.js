@@ -2,6 +2,8 @@ import React from "react";
 import { render } from 'react-dom';
 import Chatting from './component/Chatting'
 export const createChatDiv = () => {
+    // get tab info
+    //create chatting div
     const ele = document.createElement('div');
     ele.id = 'chatRoomDiv';
     ele.style.position = 'fixed';
@@ -18,8 +20,8 @@ export const createChatDiv = () => {
 }
 
 export const displayChatDiv = () => {
-    const ele = document.getElementById('chatRoomDiv');
     console.log("show");
+    const ele = document.getElementById('chatRoomDiv');
     ele.style.display = 'inline-block';
 }
 
@@ -28,3 +30,5 @@ export const hideChatDiv = () => {
     console.log("hide");
     ele.style.display = 'none';
 }
+
+  

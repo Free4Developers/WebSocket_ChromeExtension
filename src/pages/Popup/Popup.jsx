@@ -9,7 +9,7 @@ const Popup = () => {
   useEffect(()=>{
     chrome.storage.sync.get(['applicationState'], function(result){
       setIsOn(result.applicationState);
-      onApplicationRun();
+      // onApplicationRun();
       console.log(result)
   });
   },[]);
