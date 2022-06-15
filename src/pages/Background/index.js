@@ -1,92 +1,17 @@
-import { createChatDiv, hideChatDiv, displayChatDiv } from '../Content/modules/chat'
-
-console.log('This is the background page.');
-console.log('Put the background scripts here.');
-
-chrome.storage.sync.get(['applicationState'], function(result){
-    console.log("start")
-    if(result.applicationState === undefined || result.applicationState === null){
-        chrome.storage.sync.set({applicationState: false});
-    }
-    else{
-        if(result.applicationState === true){
-            // onApplicationRun();
-            onApplicationOn();
-        }
-    }
-});
-
-// 채팅 가능 여부
-export function addAvailableAppEventListener(){
-    document.addEventListener('chrome_extension_available_app', function (event) {
-      let data = event.detail.available;
-      console.log(data)
-    });
-}
-export async function getCurrentTab() {
-    let queryOptions = { active: true, lastFocusedWindow: true };
-    // `tab` will either be a `tabs.Tab` instance or `undefined`.
-    if(chrome.tabs === undefined){
-        console.log("don't know tab")
-        createChatDiv();
-        chrome.storage.sync.get(['applicationState'], function(result){
-            if(result.applicationState){
-                console.log("getCurrentTab")
-                // createChatDiv();
-                displayChatDiv();
-            }
-        });
-
-        return;
-    }
-    else{
-        console.log("know tab")
-        let [tab] = await chrome.tabs.query(queryOptions);
-        console.log(tab)
-        return tab;
-    }
-
-}
+import { createChatDiv } from '../Content/modules/chat'
 
 export function onApplicationRun(){
     console.log("first app run")
     createChatDiv();
-    chrome.storage.sync.get(['applicationState'], function(result){
-        if(result.applicationState){
-            displayChatDiv();
-        }
+}
+
+export function addAppRunEventListener(){
+    document.addEventListener('chrome_extension_available_app', function (event) {
+      let data = event.detail;
+      console.log(data)
+      if(data.available){
+          console.log("available")
+          createChatDiv();
+      }
     });
-}
-export function onApplicationOn(){
-    console.log("어플리케이션 구동")
-    getCurrentTab().then(
-        (res)=>{
-            if(res === undefined){
-                return;
-            }
-            else{
-                chrome.scripting.executeScript({
-                    target: {tabId: res.id},
-                    func: displayChatDiv,
-                });
-            }
-        }
-    )
-}
-export function onApplicationOff(){
-    console.log("어플리케이션 오프")
-    getCurrentTab().then(
-        (res)=>{
-            console.log(res)
-            if(res === undefined){
-                return;
-            }
-            else{
-                chrome.scripting.executeScript({
-                    target: {tabId: res.id},
-                    func: hideChatDiv,
-                });
-            }
-        }
-    )
-}
+  }

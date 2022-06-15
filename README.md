@@ -132,8 +132,6 @@ _./secrets.development.js_
 export default { key: '123' };
 ```
 
-_./src/popup.js_
-
 ```js
 import secrets from 'secrets';
 ApiCall({ key: secrets.key });

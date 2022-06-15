@@ -1,5 +1,6 @@
 import { addAuthEventListener } from './modules/auth';
-import { onApplicationRun, addAvailableAppEventListener } from '../Background/index'
-onApplicationRun();
-addAvailableAppEventListener();
+import { onApplicationRun, addAppRunEventListener } from '../Background/index'
+
+// onApplicationRun();
+addAppRunEventListener();
 addAuthEventListener();
