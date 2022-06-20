@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import './Chatting.css'
-// import { onSocketConnection, sendSocketMessage } from '../../../Background/index'
 import * as SockJS from 'sockjs-client';
 import * as StompJs from '@stomp/stompjs';  
 
@@ -14,26 +13,19 @@ const Chatting = () => {
 
     // const [sockjs, setSockjs] = useState();
     const client = useRef({});
-    const [receivedData, setReceivedData] = useState('');
+    const [receivedData, setReceivedData] = useState({});
 
     // 유저 정보
     const userInfo = useRef({ACCESS_TOKEN: '', USER_INFO: ''})
-    chrome.storage.sync.get(['ACCESS_TOKEN'], function(res){
-        console.log(res.ACCESS_TOKEN)
-        userInfo.current = {...userInfo.current, ACCESS_TOKEN: res.ACCESS_TOKEN};
-    });
-    chrome.storage.sync.get('USER_INFO', function(res){
-        userInfo.current = {...userInfo.current, USER_INFO: res.USER_INFO};
+    const host = window.location.host;
+    chrome.storage.sync.get([host], function(res){
+        userInfo.current = {...userInfo.current, ACCESS_TOKEN: res[host].ACCESS_TOKEN, USER_INFO: res[host].USER_INFO};
     });
 
     // 초기 채팅 <-> 클라이언트 연결 확인
     useEffect(()=>{
         client.current = new StompJs.Client({
-            // brokerURL: "ws://localhost:8080/stomp/chat", // 웹소켓 서버로 직접 접속
             webSocketFactory: () => new SockJS("http://localhost:8080/stomp/chat"), // proxy를 통한 접속
-            // connectHeaders: {
-            //     "auth-token": "spring-chat-auth-token",
-            // },
             debug: function (str) {
                 console.log(str);
             },
@@ -43,10 +35,9 @@ const Chatting = () => {
             onConnect: () => {
                 setLive(true);
                 client.current.subscribe(`/channel/chat/room/open`, function(chat){
-                    const recievedData = JSON.parse(chat.body);
-                    if(recievedData.writerId !== userInfo.current.USER_INFO.id) setReceivedData(recievedData.message); 
+                    const recieved = JSON.parse(chat.body);
+                    if(recieved.writerId !== userInfo.current.USER_INFO.id) setReceivedData((prev)=> ({...prev, writerNickname: recieved.writerNickname ,message: recieved.message})); 
                 })
-                client.current.publish({destination: "/publish/chat/enter", body: JSON.stringify({ roomId: "open", writerId: userInfo.current.USER_INFO.id })})
             },
             onStompError: (frame) => {
                 console.error(frame);
@@ -72,8 +63,8 @@ const Chatting = () => {
     },[chat])
     
     useEffect(()=>{
-        if(receivedData === '') return;
-        setChat([...chat, {name: "Server", message: receivedData}])
+        if(Object.keys(receivedData).length === 0) return;
+        setChat([...chat, {name: receivedData.writerNickname, message: receivedData.message}])
     },[receivedData])
     
     const inputMessage = (e) => {
@@ -86,17 +77,15 @@ const Chatting = () => {
     }
     const sendMessage = () => {
         if(message === '') return;
-        setChat([...chat, {name: "User", message: message}])
+        setChat([...chat, {name: userInfo.current.USER_INFO.nickname, message: message}])
         client.current.publish({destination: "/publish/chat/message", body: JSON.stringify({ roomId: "open", writerId: userInfo.current.USER_INFO.id, message: message })})
         setMessage('');
     }
     const renderChat = () => {
-        console.log(chat)
         return chat.map(({name, message}, index) => (
             <div key={index} style={{ position: "relative" ,width: "100%" }}>
-                {name === 'isOK' && <div>{message}</div>}
-                {name !== 'isOK' && name !== 'User' && <div className="recieved_chat" ref={messageEndRef}>{name}: <>{message}</></div>}
-                {name !== 'isOK' && name === 'User' && <div className="send_chat" ref={messageEndRef}>{message}</div>}
+                {name !== userInfo.current.USER_INFO.nickname && <div className="recieved_chat" ref={messageEndRef}>{name}: <>{message}</></div>}
+                {name === userInfo.current.USER_INFO.nickname && <div className="send_chat" ref={messageEndRef}>{message}</div>}
             </div>
         ));
     }
