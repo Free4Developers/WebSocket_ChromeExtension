@@ -1,43 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
-import './Chatting.css'
+import './index.css'
 import * as SockJS from 'sockjs-client';
 import * as StompJs from '@stomp/stompjs';  
 
-const Chatting = () => {
-    // chatting 토클 상태
+const Chatting = ({viewState}) => {
     const [live, setLive] = useState(false);
-    // 메세지 유저 및 내용
     const [message, setMessage] = useState('');
-    // 서버로 부터 받아온 내용
     const [chat, setChat] = useState([]);
-
-    // const [sockjs, setSockjs] = useState();
-    const client = useRef({});
     const [receivedData, setReceivedData] = useState({});
 
-    // 유저 정보
-    const userInfo = useRef({ACCESS_TOKEN: '', USER_INFO: ''})
+    const client = useRef({});
+    const userInfo = useRef({SERVER_URI: '', ACCESS_TOKEN: '', USER_INFO: ''})
+    const messageEndRef = useRef(null);
+
     const host = window.location.host;
+    
     chrome.storage.sync.get([host], function(res){
-        userInfo.current = {...userInfo.current, ACCESS_TOKEN: res[host].ACCESS_TOKEN, USER_INFO: res[host].USER_INFO};
+        userInfo.current = {...userInfo.current, SERVER_URI: res[host].SERVER_URI, STOMP_PROP: res[host].STOMP_PROP, ACCESS_TOKEN: res[host].ACCESS_TOKEN, USER_INFO: res[host].USER_INFO, DEBUG: res[host].DEBUG};
     });
 
-    // 초기 채팅 <-> 클라이언트 연결 확인
     useEffect(()=>{
         client.current = new StompJs.Client({
-            webSocketFactory: () => new SockJS("http://localhost:8080/stomp/chat"), // proxy를 통한 접속
+            webSocketFactory: () => new SockJS(userInfo.current.SERVER_URI), // proxy를 통한 접속
             debug: function (str) {
-                console.log(str);
+                if(userInfo.current.DEBUG) console.log(str);
             },
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
             onConnect: () => {
                 setLive(true);
-                client.current.subscribe(`/channel/chat/room/open`, function(chat){
+                client.current.subscribe(userInfo.current.STOMP_PROP.subscribe, function(chat){
                     const recieved = JSON.parse(chat.body);
-                    if(recieved.writerId !== userInfo.current.USER_INFO.id) setReceivedData((prev)=> ({...prev, writerNickname: recieved.writerNickname ,message: recieved.message})); 
-                })
+                    console.log(recieved)
+                    if(recieved.writerId !== userInfo.current.USER_INFO.id) setReceivedData((prev)=> ({...prev, writerId: recieved.writerId, writerNickname: recieved.writerNickname ,message: recieved.message})); 
+                });
+                client.current.publish({destination: userInfo.current.STOMP_PROP.enter, body: JSON.stringify({ roomId: userInfo.current.STOMP_PROP.roomId, writerId: userInfo.current.USER_INFO.id })})
             },
             onStompError: (frame) => {
                 console.error(frame);
@@ -48,23 +46,19 @@ const Chatting = () => {
         return () => {client.current.deactivate();}
     },[])
 
-
-    // 채팅방 y스크롤 포커싱
-    const messageEndRef = useRef(null);
-
     const scrollToBottom = () => {
         if(messageEndRef.current === null) return;
         messageEndRef.current.scrollIntoView({behavior: "smooth"})
     }
 
-    // 채팅 정보 렌더링
     useEffect(()=>{
         scrollToBottom();
     },[chat])
     
     useEffect(()=>{
         if(Object.keys(receivedData).length === 0) return;
-        setChat([...chat, {name: receivedData.writerNickname, message: receivedData.message}])
+        console.log(receivedData)
+        setChat([...chat, {name: receivedData.writerNickname, id: receivedData.writerId, message: receivedData.message}])
     },[receivedData])
     
     const inputMessage = (e) => {
@@ -77,20 +71,27 @@ const Chatting = () => {
     }
     const sendMessage = () => {
         if(message === '') return;
-        setChat([...chat, {name: userInfo.current.USER_INFO.nickname, message: message}])
-        client.current.publish({destination: "/publish/chat/message", body: JSON.stringify({ roomId: "open", writerId: userInfo.current.USER_INFO.id, message: message })})
+        setChat([...chat, {name: userInfo.current.USER_INFO.nickname, id: userInfo.current.USER_INFO.id, message: message}])
+        client.current.publish({destination: userInfo.current.STOMP_PROP.send, body: JSON.stringify({ roomId: userInfo.current.STOMP_PROP.roomId, writerId: userInfo.current.USER_INFO.id, message: message })})
         setMessage('');
     }
     const renderChat = () => {
-        return chat.map(({name, message}, index) => (
+        console.log(chat)
+        return chat.map(({name, id, message}, index) => (
             <div key={index} style={{ position: "relative" ,width: "100%" }}>
-                {name !== userInfo.current.USER_INFO.nickname && <div className="recieved_chat" ref={messageEndRef}>{name}: <>{message}</></div>}
-                {name === userInfo.current.USER_INFO.nickname && <div className="send_chat" ref={messageEndRef}>{message}</div>}
+                {id === -1 && <div className="entering_message">{message}</div>}
+                {id !== -1 && id !== userInfo.current.USER_INFO.id && 
+                    <>
+                        <div className='recieved_chat_name'>{name}</div>
+                        <div className="recieved_chat" ref={messageEndRef}>{message}</div>
+                    </>
+                }
+                {id !== -1 && id === userInfo.current.USER_INFO.id && <div className="send_chat" ref={messageEndRef}>{message}</div>}
             </div>
         ));
     }
     return(
-    <div className="chatting_container">
+    <div className={viewState}>
         { !live && 
             <>
                 서버 연결 중 입니다.

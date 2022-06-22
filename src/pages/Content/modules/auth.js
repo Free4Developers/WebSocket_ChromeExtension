@@ -7,7 +7,7 @@ export function addAuthEventListener(){
       if(res.CHROME_EXTENSION_AVAILABLE_STATE){
         const hostName = window.location.host;
         const info = {};
-        info[hostName] = {ACCESS_TOKEN: data.accessToken, USER_INFO: data.userInfo};
+        info[hostName] = {SERVER_URI: data.serverUri, STOMP_PROP: data.stomp, ACCESS_TOKEN: data.accessToken, USER_INFO: data.userInfo, DEBUG: data.debugMode};
         chrome.storage.sync.set(info, function(){
           createChatDiv();
         });

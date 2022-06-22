@@ -1,0 +1,18 @@
+.view_btn {
+    position: absolute;
+    height: 50px;
+    width: 50px;
+    right: 50px;
+    bottom: 50px;
+    z-index: 9999;
+    display: inline-block;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+.view_img {
+    width: 100%;
+    height: 100%;
+    -webkit-filter: opacity(.5) drop-shadow(0 0 0 #0086ff);
+    filter: opacity(.5) drop-shadow(0 0 0 #0086ff);
+}
